@@ -2,32 +2,15 @@ package com.ejada.project.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.ejada.project.model.Category;
-import com.ejada.project.repository.CategoryRepository;
 
-import lombok.RequiredArgsConstructor;
+public interface CategoryService {
 
-@Service
-@RequiredArgsConstructor
-public class CategoryService {
+    List<Category> getAllCategories();
 
-    private final CategoryRepository categoryRepository;
+    Category getCategoryById(Long id);
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
-    }
+    Category createCategory(Category category);
 
-    public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow();
-    }
-
-    public Category createCategory(Category category) {
-        return categoryRepository.save(category);
-    }
-
-    public void deleteCategory(Long id) {
-        categoryRepository.deleteById(id);
-    }
+    void deleteCategory(Long id);
 }

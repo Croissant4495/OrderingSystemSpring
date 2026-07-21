@@ -2,32 +2,15 @@ package com.ejada.project.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.ejada.project.model.Product;
-import com.ejada.project.repository.ProductRepository;
 
-import lombok.RequiredArgsConstructor;
+public interface ProductService {
 
-@Service
-@RequiredArgsConstructor
-public class ProductService {
-    private final ProductRepository productRepository;
+    List<Product> getAllProducts();
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+    Product getProductById(Long id);
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow();
-    }
+    Product createProduct(Product product);
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
-    }
-
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
-    }
+    void deleteProduct(Long id);
 }

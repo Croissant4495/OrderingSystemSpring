@@ -2,31 +2,15 @@ package com.ejada.project.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.ejada.project.model.User;
-import com.ejada.project.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
+public interface UserService {
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository;
+    List<User> getAllUsers();
 
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
-    }
+    User getUserById(Long id);
 
-    public User getUserById(Long id){
-        return userRepository.findById(id).orElseThrow();
-    }
+    User createUser(User user);
 
-    public User createUser(User user){
-        return userRepository.save(user);
-    }
-
-    public void deleteUser(Long id){
-        userRepository.deleteById(id);
-    }
+    void deleteUser(Long id);
 }
