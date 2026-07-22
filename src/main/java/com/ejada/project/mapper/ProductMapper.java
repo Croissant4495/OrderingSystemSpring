@@ -2,6 +2,7 @@ package com.ejada.project.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.ejada.project.dto.product.ProductRequestDTO;
 import com.ejada.project.dto.product.ProductResponseDTO;
@@ -16,4 +17,9 @@ public interface ProductMapper {
     Product toEntity(ProductRequestDTO product);
     
     ProductResponseDTO toResponseDTO(Product product);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "orderItems", ignore = true)
+    @Mapping(target = "categories", ignore = true)
+    void updateEntity(ProductRequestDTO dto, @MappingTarget Product product);
 }

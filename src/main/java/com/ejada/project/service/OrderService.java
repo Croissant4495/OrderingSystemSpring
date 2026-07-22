@@ -2,15 +2,18 @@ package com.ejada.project.service;
 
 import java.util.List;
 
-import com.ejada.project.model.Order;
+import com.ejada.project.dto.order.OrderRequestDTO;
+import com.ejada.project.dto.order.OrderResponseDTO;
 
 public interface OrderService {
 
-    List<Order> getAllOrders();
+    List<OrderResponseDTO> getAllOrders();
 
-    Order getOrderById(Long id);
+    OrderResponseDTO getOrderById(Long id);
 
-    Order createOrder(Order order);
+    OrderResponseDTO createOrder(OrderRequestDTO dto);
+
+    OrderResponseDTO updateOrder(Long id, OrderRequestDTO dto);
 
     void deleteOrder(Long id);
 }
