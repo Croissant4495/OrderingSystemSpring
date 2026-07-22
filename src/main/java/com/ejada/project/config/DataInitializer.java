@@ -7,7 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.ejada.project.enums.CategoryName;
 import com.ejada.project.enums.RoleName;
 import com.ejada.project.model.Category;
 import com.ejada.project.model.Product;
@@ -48,13 +47,13 @@ public class DataInitializer {
             if (categoryRepository.count() == 0) {
 
                 Category electronics = new Category();
-                electronics.setName(CategoryName.ELECTRONICS);
+                electronics.setName("ELECTRONICS");
 
                 Category books = new Category();
-                books.setName(CategoryName.BOOKS);
+                books.setName("BOOKS");
 
                 Category clothing = new Category();
-                clothing.setName(CategoryName.CLOTHING);
+                clothing.setName("CLOTHING");
 
                 categoryRepository.saveAll(List.of(
                         electronics,
@@ -66,10 +65,10 @@ public class DataInitializer {
             if (productRepository.count() == 0) {
 
                 Category electronics =
-                        categoryRepository.findByName(CategoryName.ELECTRONICS).orElseThrow();
+                        categoryRepository.findByName("ELECTRONICS").orElseThrow();
 
                 Category books =
-                        categoryRepository.findByName(CategoryName.BOOKS).orElseThrow();
+                        categoryRepository.findByName("BOOKS").orElseThrow();
 
                 Product laptop = new Product();
                 laptop.setName("Dell XPS 15");

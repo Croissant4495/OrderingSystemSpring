@@ -48,7 +48,7 @@ public class Order {
     private BigDecimal totalAmount;
 
     @OneToMany(mappedBy = "order")
-    private List<OrderItem> order_items = new ArrayList<>();
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name= "user_id", nullable = false)
