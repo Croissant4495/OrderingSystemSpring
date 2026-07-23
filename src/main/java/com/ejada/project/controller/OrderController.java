@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ejada.project.dto.order.OrderRequestDTO;
 import com.ejada.project.dto.order.OrderResponseDTO;
+import com.ejada.project.dto.order.OrderStatusDTO;
 import com.ejada.project.service.OrderService;
 
 import jakarta.validation.Valid;
@@ -34,21 +35,20 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
-        OrderResponseDTO order = orderService.getOrderById(id);
-        return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO dto) {
         OrderResponseDTO order = orderService.createOrder(dto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Long id, @Valid @RequestBody OrderRequestDTO dto) {
-        OrderResponseDTO order = orderService.updateOrder(id, dto);
-        return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
+    @PutMapping("/{id}/status")
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody OrderStatusDTO dto) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, dto));
     }
 
     @DeleteMapping("/{id}")

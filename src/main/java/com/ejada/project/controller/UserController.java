@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
+import com.ejada.project.dto.user.UserRoleDTO;
 import com.ejada.project.service.UserService;
 
 import jakarta.validation.Valid;
@@ -34,8 +35,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
-        UserResponseDTO user = userService.getUserById(id);
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PostMapping
@@ -43,11 +43,15 @@ public class UserController {
         UserResponseDTO user = userService.createUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
-        UserResponseDTO user = userService.updateUser(id, dto);
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(userService.updateUser(id, dto));
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<UserResponseDTO> updateUserRole(@PathVariable Long id, @Valid @RequestBody UserRoleDTO dto) {
+        return ResponseEntity.ok(userService.updateUserRole(id, dto));
     }
 
     @DeleteMapping("/{id}")

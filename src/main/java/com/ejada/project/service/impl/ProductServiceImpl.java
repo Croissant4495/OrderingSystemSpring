@@ -1,5 +1,6 @@
 package com.ejada.project.service.impl;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.ejada.project.dto.product.ProductRequestDTO;
 import com.ejada.project.dto.product.ProductResponseDTO;
+import com.ejada.project.exception.BadRequestException;
 import com.ejada.project.exception.ResourceNotFoundException;
 import com.ejada.project.mapper.ProductMapper;
 import com.ejada.project.model.Category;
@@ -43,11 +45,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO createProduct(ProductRequestDTO dto) {
+        validatePriceAndStock(dto.getPrice(), dto.getStockQuantity());
+
         Product product = productMapper.toEntity(dto);
-        
+
         Set<Category> categories = resolveCategories(dto.getCategoryIds());
         product.setCategories(categories);
-        
+
         Product savedProduct = productRepository.save(product);
         return productMapper.toResponseDTO(savedProduct);
     }
@@ -56,12 +60,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-        
+
+        validatePriceAndStock(dto.getPrice(), dto.getStockQuantity());
+
         productMapper.updateEntity(dto, product);
-        
+
         Set<Category> categories = resolveCategories(dto.getCategoryIds());
         product.setCategories(categories);
-        
+
         Product savedProduct = productRepository.save(product);
         return productMapper.toResponseDTO(savedProduct);
     }
@@ -72,6 +78,23 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Enforces business rules for price and stock in the service layer, independent
+     * of DTO bean-validation annotations.
+     */
+    private void validatePriceAndStock(BigDecimal price, Integer stockQuantity) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Product price must be greater than zero.");
+        }
+        if (stockQuantity == null || stockQuantity < 0) {
+            throw new BadRequestException("Product stock quantity cannot be negative.");
+        }
     }
 
     private Set<Category> resolveCategories(Set<Long> categoryIds) {

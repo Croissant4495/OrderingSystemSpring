@@ -7,11 +7,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ejada.project.dto.order.OrderItemRequestDTO;
 import com.ejada.project.dto.order.OrderRequestDTO;
 import com.ejada.project.dto.order.OrderResponseDTO;
+import com.ejada.project.dto.order.OrderStatusDTO;
 import com.ejada.project.enums.OrderStatus;
+import com.ejada.project.exception.BadRequestException;
 import com.ejada.project.exception.ResourceNotFoundException;
 import com.ejada.project.mapper.OrderMapper;
 import com.ejada.project.model.Order;
@@ -48,72 +51,86 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponseDTO(order);
     }
 
+    /**
+     * Creates a new order. The entire operation is transactional — stock deduction
+     * and order persistence succeed or fail together.
+     */
     @Override
+    @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto) {
-        Order order = orderMapper.toEntity(dto);
-        
+        // Verify the user exists
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
-        order.setUser(user);
-        
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + dto.getUserId()));
+
         List<OrderItem> items = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
-        
+
         for (OrderItemRequestDTO itemDto : dto.getItems()) {
+            // Quantity must be greater than zero (belt-and-suspenders beyond DTO annotation)
+            if (itemDto.getQuantity() == null || itemDto.getQuantity() <= 0) {
+                throw new BadRequestException("Item quantity must be greater than zero.");
+            }
+
+            // Verify the product exists
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemDto.getProductId()));
-            
-            items.add(createOrderItem(order, product, itemDto));
-            
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemDto.getQuantity())));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Product not found with id: " + itemDto.getProductId()));
+
+            // Reject products with no stock (out-of-stock / unavailable)
+            if (product.getStockQuantity() <= 0) {
+                throw new BadRequestException(
+                        "Product '" + product.getName() + "' is out of stock.");
+            }
+
+            // Verify sufficient stock exists
+            if (product.getStockQuantity() < itemDto.getQuantity()) {
+                throw new BadRequestException(
+                        "Insufficient stock for product '" + product.getName() +
+                        "'. Requested: " + itemDto.getQuantity() +
+                        ", Available: " + product.getStockQuantity());
+            }
+
+            // Copy current price into priceAtPurchase (snapshot at order time)
+            BigDecimal priceAtPurchase = product.getPrice();
+            BigDecimal subtotal = priceAtPurchase.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
+            total = total.add(subtotal);
+
+            // Deduct stock
+            product.setStockQuantity(product.getStockQuantity() - itemDto.getQuantity());
+            productRepository.save(product);
+
+            items.add(buildOrderItem(product, itemDto.getQuantity(), priceAtPurchase));
         }
-        
-        order.setOrderItems(items);
-        order.setTotalAmount(total);
-        order.setOrderDate(LocalDateTime.now());
+
+        // Build and save the order
+        Order order = new Order();
+        order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
-        
+        order.setOrderDate(LocalDateTime.now());
+        order.setTotalAmount(total);
+
+        // Link each item to this order
+        for (OrderItem item : items) {
+            item.setOrder(order);
+        }
+        order.setOrderItems(items);
+
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toResponseDTO(savedOrder);
     }
 
+    /**
+     * Updates only the status of an existing order. Order items are immutable.
+     */
     @Override
-    public OrderResponseDTO updateOrder(Long id, OrderRequestDTO dto) {
+    @Transactional
+    public OrderResponseDTO updateOrderStatus(Long id, OrderStatusDTO dto) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
-        
-        orderMapper.updateEntity(dto, order);
-        
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
-        order.setUser(user);
-        
-        // Using clear() requires CascadeType.ALL and orphanRemoval=true, which is standard
-        // But for simplicity of remapping, we will clear and rebuild
-        if (order.getOrderItems() != null) {
-            order.getOrderItems().clear();
-        } else {
-            order.setOrderItems(new ArrayList<>());
-        }
-        
-        BigDecimal total = BigDecimal.ZERO;
-        
-        for (OrderItemRequestDTO itemDto : dto.getItems()) {
-            Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemDto.getProductId()));
-            
-            OrderItem item = new OrderItem();
-            item.setProduct(product);
-            item.setQuantity(itemDto.getQuantity());
-            item.setPriceAtPurchase(product.getPrice());
-            item.setOrder(order);
-            order.getOrderItems().add(item);
-            
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemDto.getQuantity())));
-        }
-        
-        order.setTotalAmount(total);
-        
+
+        order.setStatus(dto.getStatus());
+
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toResponseDTO(savedOrder);
     }
@@ -126,17 +143,15 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.deleteById(id);
     }
 
-    private OrderItem createOrderItem(
-            Order order,
-            Product product,
-            OrderItemRequestDTO dto) {
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
 
+    private OrderItem buildOrderItem(Product product, int quantity, BigDecimal priceAtPurchase) {
         OrderItem item = new OrderItem();
-        item.setOrder(order);
         item.setProduct(product);
-        item.setQuantity(dto.getQuantity());
-        item.setPriceAtPurchase(product.getPrice());
-
+        item.setQuantity(quantity);
+        item.setPriceAtPurchase(priceAtPurchase);
         return item;
     }
 }

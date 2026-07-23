@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.ejada.project.enums.OrderStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -47,9 +48,13 @@ public class Order {
     
     private BigDecimal totalAmount;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(
+        mappedBy = "order",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
     private List<OrderItem> orderItems = new ArrayList<>();
-
+    
     @ManyToOne
     @JoinColumn(name= "user_id", nullable = false)
     private User user;
