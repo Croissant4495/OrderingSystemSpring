@@ -2,6 +2,8 @@ package com.ejada.project.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,9 +17,8 @@ import com.ejada.project.dto.product.ProductRequestDTO;
 import com.ejada.project.dto.product.ProductResponseDTO;
 import com.ejada.project.service.ProductService;
 
-import lombok.RequiredArgsConstructor;
-
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
@@ -27,28 +28,33 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<ProductResponseDTO> findAll() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductResponseDTO>> findAll() {
+        return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @GetMapping("/{id}")
-    public ProductResponseDTO findById(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ResponseEntity<ProductResponseDTO> findById(@PathVariable Long id) {
+        ProductResponseDTO product = productService.getProductById(id);
+        return product != null ? ResponseEntity.ok(product) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ProductResponseDTO createProduct(@Valid @RequestBody ProductRequestDTO dto){
-        return productService.createProduct(dto);
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto){
+        ProductResponseDTO product = productService.createProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(product);
     }
     
     @PutMapping("/{id}")
-    public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO dto) {
-        return productService.updateProduct(id, dto);
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO dto) {
+        ProductResponseDTO product = productService.updateProduct(id, dto);
+        return product != null ? ResponseEntity.ok(product) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
