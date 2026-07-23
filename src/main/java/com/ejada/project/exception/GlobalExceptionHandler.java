@@ -83,16 +83,25 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(
-            MethodArgumentNotValidException ex) {
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleValidationException(
+			MethodArgumentNotValidException ex,
+			HttpServletRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
+		Map<String, String> errors = new HashMap<>();
 
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error ->
-                        errors.put(error.getField(), error.getDefaultMessage()));
+		ex.getBindingResult().getFieldErrors()
+				.forEach(error ->
+						errors.put(error.getField(), error.getDefaultMessage()));
 
-        return ResponseEntity.badRequest().body(errors);
-    }
+		ErrorResponse response = ErrorResponse.builder()
+				.timestamp(LocalDateTime.now())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+				.message("Validation failed")
+				.path(request.getRequestURI())
+				.validationErrors(errors)
+				.build();
+		return ResponseEntity.badRequest().body(response);
+	}
 }
