@@ -243,9 +243,9 @@ Future versions will include authentication endpoints and secured administrative
 * Order status update endpoint
 * Pagination
 * Filtering and searching
-* Product image support
+<!-- * Product image support
 * Order history
-* Refresh Tokens
+* Refresh Tokens -->
 * Unit and Integration Testing
 
 ---
