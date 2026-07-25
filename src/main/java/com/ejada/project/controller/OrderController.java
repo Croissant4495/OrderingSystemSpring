@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ejada.project.dto.order.OrderRequestDTO;
+
 import com.ejada.project.dto.order.OrderResponseDTO;
 import com.ejada.project.dto.order.OrderStatusDTO;
 import com.ejada.project.service.OrderService;
@@ -47,8 +47,8 @@ public class OrderController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO dto) {
-        OrderResponseDTO order = orderService.createOrder(dto);
+    public ResponseEntity<OrderResponseDTO> createOrder() {
+        OrderResponseDTO order = orderService.createOrder();
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 

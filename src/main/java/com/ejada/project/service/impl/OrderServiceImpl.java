@@ -11,18 +11,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ejada.project.dto.order.OrderItemRequestDTO;
-import com.ejada.project.dto.order.OrderRequestDTO;
 import com.ejada.project.dto.order.OrderResponseDTO;
 import com.ejada.project.dto.order.OrderStatusDTO;
 import com.ejada.project.enums.OrderStatus;
 import com.ejada.project.exception.BadRequestException;
 import com.ejada.project.exception.ResourceNotFoundException;
 import com.ejada.project.mapper.OrderMapper;
+import com.ejada.project.model.Cart;
+import com.ejada.project.model.CartItem;
 import com.ejada.project.model.Order;
 import com.ejada.project.model.OrderItem;
 import com.ejada.project.model.Product;
 import com.ejada.project.model.User;
+import com.ejada.project.repository.CartRepository;
 import com.ejada.project.repository.OrderRepository;
 import com.ejada.project.repository.ProductRepository;
 import com.ejada.project.repository.UserRepository;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CartRepository cartRepository;
     private final OrderMapper orderMapper;
 
     @Override
@@ -59,29 +61,28 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO dto) {
+    public OrderResponseDTO createOrder() {
         // Verify the user exists
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         String username = authentication.getName();
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found with username: " + username));
 
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BadRequestException("Cart is empty."));
+
+        if (cart.getCartItems().isEmpty()) {
+            throw new BadRequestException("Cart is empty.");
+        }
+
         List<OrderItem> items = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
 
-        for (OrderItemRequestDTO itemDto : dto.getItems()) {
-            // Quantity must be greater than zero (belt-and-suspenders beyond DTO annotation)
-            if (itemDto.getQuantity() == null || itemDto.getQuantity() <= 0) {
-                throw new BadRequestException("Item quantity must be greater than zero.");
-            }
-
-            // Verify the product exists
-            Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Product not found with id: " + itemDto.getProductId()));
+        for (CartItem cartItem : cart.getCartItems()) {
+            Product product = cartItem.getProduct();
+            int quantity = cartItem.getQuantity();
 
             // Reject products with no stock (out-of-stock / unavailable)
             if (product.getStockQuantity() <= 0) {
@@ -90,23 +91,23 @@ public class OrderServiceImpl implements OrderService {
             }
 
             // Verify sufficient stock exists
-            if (product.getStockQuantity() < itemDto.getQuantity()) {
+            if (product.getStockQuantity() < quantity) {
                 throw new BadRequestException(
                         "Insufficient stock for product '" + product.getName() +
-                        "'. Requested: " + itemDto.getQuantity() +
+                        "'. Requested: " + quantity +
                         ", Available: " + product.getStockQuantity());
             }
 
             // Copy current price into priceAtPurchase (snapshot at order time)
             BigDecimal priceAtPurchase = product.getPrice();
-            BigDecimal subtotal = priceAtPurchase.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
+            BigDecimal subtotal = priceAtPurchase.multiply(BigDecimal.valueOf(quantity));
             total = total.add(subtotal);
 
             // Deduct stock
-            product.setStockQuantity(product.getStockQuantity() - itemDto.getQuantity());
+            product.setStockQuantity(product.getStockQuantity() - quantity);
             productRepository.save(product);
 
-            items.add(buildOrderItem(product, itemDto.getQuantity(), priceAtPurchase));
+            items.add(buildOrderItem(product, quantity, priceAtPurchase));
         }
 
         // Build and save the order
@@ -123,6 +124,11 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(items);
 
         Order savedOrder = orderRepository.save(order);
+
+        // Clear the cart
+        cart.getCartItems().clear();
+        cartRepository.save(cart);
+
         return orderMapper.toResponseDTO(savedOrder);
     }
 

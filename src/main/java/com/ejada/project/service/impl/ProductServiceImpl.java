@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.ejada.project.dto.product.ProductRequestDTO;
@@ -18,6 +21,7 @@ import com.ejada.project.model.Product;
 import com.ejada.project.repository.CategoryRepository;
 import com.ejada.project.repository.ProductRepository;
 import com.ejada.project.service.ProductService;
+import com.ejada.project.specification.ProductSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,10 +34,19 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
     @Override
-    public List<ProductResponseDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(productMapper::toResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ProductResponseDTO> getAllProducts(
+            String search,
+            String category,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Boolean inStock,
+            Pageable pageable) {
+        
+        Specification<Product> spec = ProductSpecification.filterProducts(
+                search, category, minPrice, maxPrice, inStock);
+
+        return productRepository.findAll(spec, pageable)
+                .map(productMapper::toResponseDTO);
     }
 
     @Override

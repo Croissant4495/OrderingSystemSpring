@@ -2,7 +2,6 @@ package com.ejada.project.service;
 
 import java.util.List;
 
-import com.ejada.project.dto.order.OrderRequestDTO;
 import com.ejada.project.dto.order.OrderResponseDTO;
 import com.ejada.project.dto.order.OrderStatusDTO;
 
@@ -12,7 +11,7 @@ public interface OrderService {
 
     OrderResponseDTO getOrderById(Long id);
 
-    OrderResponseDTO createOrder(OrderRequestDTO dto);
+    OrderResponseDTO createOrder();
 
     OrderResponseDTO updateOrderStatus(Long id, OrderStatusDTO dto);
 

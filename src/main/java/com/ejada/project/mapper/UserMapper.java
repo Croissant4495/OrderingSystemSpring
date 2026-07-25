@@ -14,6 +14,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "orders", ignore = true)
+    @Mapping(target = "cart", ignore = true)
     User toEntity(UserRequestDTO dto);
 
     UserResponseDTO toResponseDTO(User user);
@@ -21,6 +22,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "orders", ignore = true)
+    @Mapping(target = "cart", ignore = true)
     @Mapping(target = "password", ignore = true)
     void updateEntity(UserRequestDTO dto, @MappingTarget User user);
 }
