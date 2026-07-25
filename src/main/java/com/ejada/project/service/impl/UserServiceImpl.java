@@ -3,6 +3,7 @@ package com.ejada.project.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ejada.project.dto.user.UserRequestDTO;
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -57,6 +59,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         // Auto-assign the default ROLE_USER
         Role defaultRole = roleRepository.findByName(RoleName.USER)

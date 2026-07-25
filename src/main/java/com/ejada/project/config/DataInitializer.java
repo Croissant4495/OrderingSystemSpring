@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ejada.project.enums.RoleName;
 import com.ejada.project.model.Category;
@@ -28,7 +29,8 @@ public class DataInitializer {
             UserRepository userRepository,
             RoleRepository roleRepository,
             ProductRepository productRepository,
-            CategoryRepository categoryRepository) {
+            CategoryRepository categoryRepository,
+            PasswordEncoder passwordEncoder) {
 
         return args -> {
 
@@ -108,7 +110,7 @@ public class DataInitializer {
 
                 User admin = new User();
                 admin.setUsername("admin");
-                admin.setPassword("admin123");
+                admin.setPassword(passwordEncoder.encode("admin123"));
                 admin.setEmail("admin@shop.com");
                 admin.setFirstName("System");
                 admin.setLastName("Admin");
@@ -116,7 +118,7 @@ public class DataInitializer {
 
                 User user = new User();
                 user.setUsername("john");
-                user.setPassword("123456");
+                user.setPassword(passwordEncoder.encode("123456"));
                 user.setEmail("john@gmail.com");
                 user.setFirstName("John");
                 user.setLastName("Doe");
