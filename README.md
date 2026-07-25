@@ -4,23 +4,31 @@
 
 This project is a RESTful E-Commerce backend developed using **Spring Boot** following a layered architecture and REST design principles.
 
-The application provides APIs for managing users, products, categories, and orders while maintaining a clear separation between the API layer, business logic, and persistence layer. DTOs are used to isolate the API contract from the database entities, and MapStruct is used for object mapping.
+The application provides secure APIs for managing users, products, categories, shopping carts, and orders while maintaining a clear separation between the API layer, business logic, and persistence layer. DTOs are used to isolate the API contract from the database entities, and MapStruct is used for object mapping.
 
-The project is designed to be easily extended with **Spring Security** and **JWT Authentication**, allowing role-based access to protected resources.
+Authentication is implemented using **JWT (JSON Web Tokens)** with **Spring Security**, and Role-Based Access Control (RBAC) is used to secure administrative and user-specific operations.
 
 ---
 
 # Features
 
+* JWT Authentication
+* Spring Security
+* Role-Based Access Control (RBAC)
 * User Management
+* Role Management
 * Product Management
 * Category Management
+* Persisted Shopping Cart
 * Order Management
-* Order Item Management
 * DTO-based API
 * Bean Validation
 * Global Exception Handling
 * OpenAPI (Swagger) Documentation
+* Pagination
+* Sorting
+* Product Search
+* Dynamic Product Filtering
 * Layered Architecture
 * Repository Pattern
 * MapStruct Mapping
@@ -32,15 +40,17 @@ The project is designed to be easily extended with **Spring Security** and **JWT
 
 * Java 21
 * Spring Boot
+* Spring Security
 * Spring Web
 * Spring Data JPA
 * Hibernate
+* JWT Authentication
 * MapStruct
 * Lombok
 * Bean Validation
 * Maven
 * OpenAPI / Swagger
-* H2 / MySQL (depending on configuration)
+* MySQL
 
 ---
 
@@ -61,7 +71,7 @@ Repository
 Database
 ```
 
-Additionally, DTOs are used to transfer data between the API and the service layer.
+DTOs are used to separate the API contract from the persistence model.
 
 ```
 Client
@@ -96,6 +106,19 @@ Client
 
 # Main Modules
 
+## Authentication
+
+Handles user authentication using JWT.
+
+Supports:
+
+* User login
+* JWT generation
+* Stateless authentication
+* Protected endpoints
+
+---
+
 ## Users
 
 Responsible for managing application users.
@@ -109,6 +132,17 @@ Supports:
 
 ---
 
+## Roles
+
+Responsible for application authorization.
+
+Supports:
+
+* Assigning user roles
+* Role-based access control through Spring Security
+
+---
+
 ## Products
 
 Responsible for product catalog management.
@@ -119,6 +153,10 @@ Supports:
 * Retrieve products
 * Update product
 * Delete product
+* Pagination
+* Sorting
+* Searching by name
+* Dynamic filtering by category, price range, and stock availability
 
 Products may belong to one or more categories.
 
@@ -137,24 +175,73 @@ Supports:
 
 ---
 
+## Shopping Cart
+
+Each authenticated user owns a persisted shopping cart stored in the database.
+
+Supports:
+
+* View cart
+* Add products
+* Update quantities
+* Remove items
+* Clear cart
+
+The cart persists across user sessions and is used during checkout.
+
+---
+
 ## Orders
 
 Responsible for customer orders.
 
 Supports:
 
-* Create order
+* Checkout using the authenticated user's shopping cart
 * Retrieve orders
 * Update order
 * Delete order
 
-Each order contains one or more order items.
+During checkout the application:
 
-The total order amount is calculated automatically from the products and quantities supplied.
+* Validates product availability
+* Verifies sufficient stock
+* Creates the order
+* Creates order items
+* Calculates the total automatically
+* Deducts inventory
+* Clears the shopping cart
+
+All checkout operations execute inside a single transaction.
 
 Orders are initially created with a **PENDING** status.
 
-A future enhancement will allow privileged users to update an order's status (e.g., SHIPPED) through secured endpoints.
+---
+
+# Security
+
+Authentication and authorization are implemented using Spring Security and JWT.
+
+The application uses Role-Based Access Control (RBAC).
+
+Available roles:
+
+* ADMIN
+* USER
+
+Typical authorization rules:
+
+| Endpoint            | Access             |
+| ------------------- | ------------------ |
+| Authentication      | Public             |
+| Product browsing    | Public             |
+| Shopping Cart       | Authenticated User |
+| Checkout            | Authenticated User |
+| User profile        | Owner              |
+| Product management  | ADMIN              |
+| Category management | ADMIN              |
+| View all orders     | ADMIN              |
+| View own orders     | USER               |
 
 ---
 
@@ -165,35 +252,13 @@ A future enhancement will allow privileged users to update an order's status (e.
 * Persistence is handled through Spring Data JPA repositories.
 * Validation is performed using Jakarta Bean Validation.
 * Object mapping is performed using MapStruct.
-* Controllers only coordinate requests and responses.
+* Controllers coordinate requests and responses only.
+* JWT provides stateless authentication.
+* RBAC is enforced through Spring Security.
+* Shopping carts are persisted in the database.
+* Product filtering is implemented using Spring Data JPA Specifications.
+* Pagination and sorting use Spring Data's Pageable abstraction.
 * The project follows RESTful API conventions.
-
----
-
-# Security (Planned)
-
-The application is designed to support:
-
-* Spring Security
-* JWT Authentication
-* Role-Based Authorization
-
-Planned roles include:
-
-* ADMIN
-* USER
-
-Typical authorization rules:
-
-| Endpoint             | Access             |
-| -------------------- | ------------------ |
-| Authentication       | Public             |
-| Product browsing     | Public             |
-| Order creation       | Authenticated User |
-| User profile         | Owner              |
-| Product management   | Admin              |
-| Category management  | Admin              |
-| Order status updates | Admin              |
 
 ---
 
@@ -201,19 +266,13 @@ Typical authorization rules:
 
 The complete API specification is available through the generated OpenAPI 3 documentation.
 
-```
-OpenAPI3.json
-```
-
-or through Swagger UI after running the application.
-
-The documentation contains:
+Swagger UI provides:
 
 * Available endpoints
 * Request DTOs
 * Response DTOs
 * Validation constraints
-* Response schemas
+* Authentication support
 * HTTP methods
 * Status codes
 
@@ -223,38 +282,32 @@ The documentation contains:
 
 The API currently exposes endpoints for:
 
+* Authentication
 * Users
+* Roles
 * Products
 * Categories
+* Shopping Cart
 * Orders
-* Roles
-
-Each resource supports the appropriate REST operations (GET, POST, PUT, DELETE) where applicable.
-
-Future versions will include authentication endpoints and secured administrative operations.
 
 ---
 
 # Future Improvements
 
-* JWT Authentication
-* Spring Security
-* Role-based authorization
-* Order status update endpoint
-* Pagination
-* Filtering and searching
-<!-- * Product image support
-* Order history
-* Refresh Tokens -->
-* Unit and Integration Testing
-
----
+- Refresh Token support
+- Product image upload
+- Order history enhancements
+- Unit Testing
+- Integration Testing
+- Docker deployment
+- CI/CD pipeline
 
 # Running the Project
 
 1. Clone the repository.
-2. Configure the database.
-3. Run the Spring Boot application.
+2. Configure the MySQL database.
+3. Configure application properties.
+4. Run the application.
 
 ```
 mvn spring-boot:run
@@ -266,14 +319,8 @@ or run the main application class from your IDE.
 
 # API Testing
 
-The project can be tested using:
+The API can be tested using:
 
 * Postman Collection
 * Swagger UI
 * OpenAPI 3 Specification
-
----
-
-# Authors
-
-Developed as a project using Spring Boot and modern REST API design principles.

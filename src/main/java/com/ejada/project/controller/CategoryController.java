@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "5. Categories")
+@Tag(name = "6. Categories")
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor

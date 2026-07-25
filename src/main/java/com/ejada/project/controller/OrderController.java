@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.ejada.project.dto.order.OrderResponseDTO;
 import com.ejada.project.dto.order.OrderStatusDTO;
 import com.ejada.project.service.OrderService;
@@ -24,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "4. Orders")
+@Tag(name = "5. Orders")
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
