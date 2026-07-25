@@ -8,6 +8,8 @@ import com.ejada.project.dto.user.UserRoleDTO;
 
 public interface UserService {
 
+    List<UserResponseDTO> getUsers();
+
     List<UserResponseDTO> getAllUsers();
 
     UserResponseDTO getUserById(Long id);

@@ -13,9 +13,11 @@ import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
 import com.ejada.project.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "1. Authentication")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

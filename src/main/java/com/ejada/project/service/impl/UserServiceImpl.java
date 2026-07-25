@@ -3,6 +3,9 @@ package com.ejada.project.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,27 @@ public class UserServiceImpl implements UserService {
     private final RoleMapper roleMapper;
 
     @Override
+    public List<UserResponseDTO> getUsers() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            return userRepository.findAll().stream()
+                    .map(userMapper::toResponseDTO)
+                    .toList();
+        }
+
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Authenticated user not found."));
+
+        return List.of(userMapper.toResponseDTO(user));
+    }
+    
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toResponseDTO)
@@ -76,6 +100,24 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
+        Authentication authentication =
+        SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Authenticated user not found."));
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !currentUser.getId().equals(id)) {
+            throw new AccessDeniedException(
+                    "You may only update your own profile.");
+        }
+
         // If username is being changed, ensure it's not taken by another user
         userRepository.findByUsername(dto.getUsername()).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
@@ -93,6 +135,7 @@ public class UserServiceImpl implements UserService {
         });
 
         userMapper.updateEntity(dto, user);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         User savedUser = userRepository.save(user);
         return userMapper.toResponseDTO(savedUser);

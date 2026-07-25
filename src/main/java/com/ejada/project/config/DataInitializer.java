@@ -115,6 +115,7 @@ public class DataInitializer {
                 admin.setFirstName("System");
                 admin.setLastName("Admin");
                 admin.getRoles().add(adminRole);
+                admin.getRoles().add(userRole);
 
                 User user = new User();
                 user.setUsername("john");
