@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ejada.project.service.UserService;
+import com.ejada.project.service.RoleService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,17 +22,17 @@ import lombok.RequiredArgsConstructor;
 @SecurityRequirement(name = "bearerAuth")
 public class RoleController {
 
-    private final UserService userService;
+    private final RoleService roleService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<String>> getAllRoles() {
-        return ResponseEntity.ok(userService.getAllRoles());
+        return ResponseEntity.ok(roleService.getAllRoles());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<String> getRoleById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getRoleById(id));
+        return ResponseEntity.ok(roleService.getRoleById(id));
     }
 }

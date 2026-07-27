@@ -18,6 +18,7 @@ import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
 import com.ejada.project.dto.user.UserRoleDTO;
 import com.ejada.project.dto.user.UserUpdateRequestDTO;
+import com.ejada.project.service.RoleService;
 import com.ejada.project.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
     @Operation(
         summary = "Get users",
@@ -75,7 +77,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/role")
     public ResponseEntity<UserResponseDTO> updateUserRole(@PathVariable Long id, @Valid @RequestBody UserRoleDTO dto) {
-        return ResponseEntity.ok(userService.updateUserRole(id, dto));
+        return ResponseEntity.ok(roleService.updateUserRole(id, dto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

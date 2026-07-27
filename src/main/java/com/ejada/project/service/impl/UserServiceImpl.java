@@ -1,7 +1,6 @@
 package com.ejada.project.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
-import com.ejada.project.dto.user.UserRoleDTO;
 import com.ejada.project.dto.user.UserUpdateRequestDTO;
 import com.ejada.project.enums.RoleName;
 import com.ejada.project.exception.ResourceAlreadyExistsException;
@@ -56,12 +54,6 @@ public class UserServiceImpl implements UserService {
                         new ResourceNotFoundException("Authenticated user not found."));
 
         return List.of(userMapper.toResponseDTO(user));
-    }
-    
-    public List<UserResponseDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toResponseDTO)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -153,35 +145,5 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
-    }
-
-    @Override
-    public UserResponseDTO updateUserRole(Long userId, UserRoleDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        Role role = roleRepository.findByName(dto.getRoleName())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Role not found: " + dto.getRoleName()));
-
-        // Additive: add role to existing set (no-op if already present)
-        user.getRoles().add(role);
-
-        User savedUser = userRepository.save(user);
-        return userMapper.toResponseDTO(savedUser);
-    }
-
-    @Override
-    public List<String> getAllRoles() {
-        return roleRepository.findAll().stream()
-                .map(roleMapper::toRoleName)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public String getRoleById(Long id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
-        return roleMapper.toRoleName(role);
     }
 }
