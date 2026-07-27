@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +17,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,10 +39,14 @@ public class Product {
         allocationSize = 1)    
     private Long id;
 
+    @Column(nullable = false)
     private String name;
     private String description;
 
+    @Column(nullable = false)
     private BigDecimal price;
+
+    @Column(nullable = false)
     private Integer stockQuantity;
 
     @ManyToMany
@@ -49,6 +55,7 @@ public class Product {
         joinColumns = @JoinColumn(name = "PROD_ID"),
         inverseJoinColumns = @JoinColumn(name = "CAT_ID")
     )
+    @NotEmpty(message = "A product must belong to at least one category.")
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "product")

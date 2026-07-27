@@ -9,6 +9,7 @@ import java.util.List;
 import com.ejada.project.enums.OrderStatus;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,11 +42,14 @@ public class Order {
         allocationSize = 1)    
     private Long id;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Column(nullable = false)
     private LocalDateTime orderDate;
     
+    @Column(nullable = false)
     private BigDecimal totalAmount;
 
     @OneToMany(
@@ -54,8 +58,8 @@ public class Order {
         orphanRemoval = true
     )
     private List<OrderItem> orderItems = new ArrayList<>();
-    
-    @ManyToOne
+
+    @ManyToOne(optional = false)
     @JoinColumn(name= "user_id", nullable = false)
     private User user;
 }

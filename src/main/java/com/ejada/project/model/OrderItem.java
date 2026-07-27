@@ -2,6 +2,7 @@ package com.ejada.project.model;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,15 +32,17 @@ public class OrderItem {
         allocationSize = 1)    
     private Long id;
 
+    @Column(nullable = false)
     private Integer quantity;
 
+    @Column(nullable = false)
     private BigDecimal priceAtPurchase;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name="product_id", nullable=false)
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name="order_id", nullable=false)
     private Order order;
 
