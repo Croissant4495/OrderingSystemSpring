@@ -20,9 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
     
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(
-            ResourceNotFoundException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -37,9 +35,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleConflict(
-            ResourceAlreadyExistsException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleConflict(ResourceAlreadyExistsException ex, HttpServletRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -54,9 +50,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(
-            BadRequestException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -71,9 +65,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(
-            Exception ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleException(Exception ex, HttpServletRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -88,9 +80,7 @@ public class GlobalExceptionHandler {
     }
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ErrorResponse> handleValidationException(
-			MethodArgumentNotValidException ex,
-			HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
 
 		Map<String, String> errors = new HashMap<>();
 
@@ -110,41 +100,35 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
-			HttpMessageNotReadableException ex,
-			HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
 
-	ErrorResponse error = ErrorResponse.builder()
-			.timestamp(LocalDateTime.now())
-			.status(HttpStatus.BAD_REQUEST.value())
-			.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-			.message("Invalid request body")
-			.path(request.getRequestURI())
-			.build();
+		ErrorResponse error = ErrorResponse.builder()
+				.timestamp(LocalDateTime.now())
+				.status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+				.message("Invalid request body")
+				.path(request.getRequestURI())
+				.build();
 
-	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
 
 	@ExceptionHandler(BadCredentialsException.class)
-	public ResponseEntity<ErrorResponse> handleBadCredentialsException(
-			BadCredentialsException ex,
-			HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
 
-	ErrorResponse response = ErrorResponse.builder()
-			.timestamp(LocalDateTime.now())
-			.status(HttpStatus.UNAUTHORIZED.value())
-			.error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-			.message("Invalid username or password.")
-			.path(request.getRequestURI())
-			.build();
+		ErrorResponse response = ErrorResponse.builder()
+				.timestamp(LocalDateTime.now())
+				.status(HttpStatus.UNAUTHORIZED.value())
+				.error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+				.message("Invalid username or password.")
+				.path(request.getRequestURI())
+				.build();
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
+	}
 
 	@ExceptionHandler(AuthorizationDeniedException.class)
-	public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
-			AuthorizationDeniedException ex,
-			HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
 
 		ErrorResponse response = ErrorResponse.builder()
 				.timestamp(LocalDateTime.now())

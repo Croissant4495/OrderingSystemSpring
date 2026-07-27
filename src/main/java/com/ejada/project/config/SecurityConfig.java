@@ -31,7 +31,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService  customUserDetailsService;
     private final JwtAuthenticationFilter   jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-private final JwtAccessDeniedHandler accessDeniedHandler;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
