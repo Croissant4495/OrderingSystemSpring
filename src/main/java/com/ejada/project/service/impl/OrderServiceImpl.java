@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,15 +43,54 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDTO> getAllOrders() {
-        return orderRepository.findAll().stream()
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        List<Order> orders;
+
+        if (isAdmin) {
+            orders = orderRepository.findAll();
+        } else {
+            User user = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Authenticated user not found."));
+
+            orders = orderRepository.findByUser(user);
+        }
+
+        return orders.stream()
                 .map(orderMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public OrderResponseDTO getOrderById(Long id) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Order not found with id: " + id));
+
+        if (!isAdmin) {
+            User user = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Authenticated user not found."));
+
+            if (!order.getUser().getId().equals(user.getId())) {
+                throw new AccessDeniedException(
+                        "You are not allowed to access this order.");
+            }
+        }
+
         return orderMapper.toResponseDTO(order);
     }
 
