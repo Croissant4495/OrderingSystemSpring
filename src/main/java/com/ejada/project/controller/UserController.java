@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
 import com.ejada.project.dto.user.UserRoleDTO;
+import com.ejada.project.dto.user.UserUpdateRequestDTO;
 import com.ejada.project.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,7 +68,7 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequestDTO dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 

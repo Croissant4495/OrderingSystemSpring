@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
 import com.ejada.project.dto.user.UserRoleDTO;
+import com.ejada.project.dto.user.UserUpdateRequestDTO;
 import com.ejada.project.enums.RoleName;
 import com.ejada.project.exception.ResourceAlreadyExistsException;
 import com.ejada.project.exception.ResourceNotFoundException;
@@ -96,12 +97,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        Authentication authentication =
-        SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getName();
 
@@ -119,23 +119,29 @@ public class UserServiceImpl implements UserService {
         }
 
         // If username is being changed, ensure it's not taken by another user
-        userRepository.findByUsername(dto.getUsername()).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw new ResourceAlreadyExistsException(
-                        "Username already taken: " + dto.getUsername());
-            }
-        });
+        if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
+            userRepository.findByUsername(dto.getUsername()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new ResourceAlreadyExistsException(
+                            "Username already taken: " + dto.getUsername());
+                }
+            });
+        }
 
         // If email is being changed, ensure it's not taken by another user
-        userRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw new ResourceAlreadyExistsException(
-                        "Email already registered: " + dto.getEmail());
-            }
-        });
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            userRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new ResourceAlreadyExistsException(
+                            "Email already registered: " + dto.getEmail());
+                }
+            });
+        }
 
         userMapper.updateEntity(dto, user);
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
 
         User savedUser = userRepository.save(user);
         return userMapper.toResponseDTO(savedUser);
