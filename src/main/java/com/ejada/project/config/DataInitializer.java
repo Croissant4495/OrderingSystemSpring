@@ -129,7 +129,6 @@ public class DataInitializer {
                 userRepository.save(user);
             }
 
-            System.out.println("Sample data inserted.");
         };
     }
 }

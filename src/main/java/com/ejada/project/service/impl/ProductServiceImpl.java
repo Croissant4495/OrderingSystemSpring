@@ -2,14 +2,13 @@ package com.ejada.project.service.impl;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ejada.project.dto.product.ProductRequestDTO;
 import com.ejada.project.dto.product.ProductResponseDTO;
@@ -33,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<ProductResponseDTO> getAllProducts(
             String search,
@@ -49,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toResponseDTO);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
@@ -56,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDTO(product);
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO createProduct(ProductRequestDTO dto) {
         validatePriceAndStock(dto.getPrice(), dto.getStockQuantity());
@@ -69,6 +71,7 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDTO(savedProduct);
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
         Product product = productRepository.findById(id)
@@ -85,6 +88,7 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDTO(savedProduct);
     }
 
+    @Transactional
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
@@ -93,14 +97,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
-    // -------------------------------------------------------------------------
     // Helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Enforces business rules for price and stock in the service layer, independent
-     * of DTO bean-validation annotations.
-     */
     private void validatePriceAndStock(BigDecimal price, Integer stockQuantity) {
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Product price must be greater than zero.");

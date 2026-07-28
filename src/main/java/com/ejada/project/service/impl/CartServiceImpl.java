@@ -36,7 +36,7 @@ public class CartServiceImpl implements CartService {
     private final CartMapper cartMapper;
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public CartResponseDTO getCart() {
         Cart cart = getOrCreateCartForAuthenticatedUser();
         return cartMapper.toResponseDTO(cart);

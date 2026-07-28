@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ejada.project.dto.user.UserResponseDTO;
 import com.ejada.project.dto.user.UserRoleDTO;
@@ -27,6 +28,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleMapper roleMapper;
     private final UserMapper userMapper;
 
+    @Transactional
     @Override
     public UserResponseDTO updateUserRole(Long userId, UserRoleDTO dto) {
         User user = userRepository.findById(userId)
@@ -43,6 +45,7 @@ public class RoleServiceImpl implements RoleService {
         return userMapper.toResponseDTO(savedUser);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<String> getAllRoles() {
         return roleRepository.findAll().stream()
@@ -50,6 +53,7 @@ public class RoleServiceImpl implements RoleService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public String getRoleById(Long id) {
         Role role = roleRepository.findById(id)

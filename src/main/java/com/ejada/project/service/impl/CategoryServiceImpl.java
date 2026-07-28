@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ejada.project.dto.category.CategoryRequestDTO;
 import com.ejada.project.dto.category.CategoryResponseDTO;
@@ -24,6 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryResponseDTO> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(categoryMapper::toResponseDTO)
@@ -31,12 +33,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryResponseDTO getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return categoryMapper.toResponseDTO(category);
     }
 
+    @Transactional
     @Override
     public CategoryResponseDTO createCategory(CategoryRequestDTO dto) {
         if (categoryRepository.findByName(dto.getName()).isPresent()) {
@@ -48,6 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponseDTO(savedCategory);
     }
 
+    @Transactional
     @Override
     public CategoryResponseDTO updateCategory(Long id, CategoryRequestDTO dto) {
         Category category = categoryRepository.findById(id)
@@ -65,6 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponseDTO(savedCategory);
     }
 
+    @Transactional
     @Override
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {

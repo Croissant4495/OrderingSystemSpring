@@ -41,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final OrderMapper orderMapper;
 
+    @Transactional(readOnly = true)
     @Override
     public List<OrderResponseDTO> getAllOrders() {
         Authentication authentication =
@@ -67,6 +68,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public OrderResponseDTO getOrderById(Long id) {
         Authentication authentication =
@@ -186,6 +188,7 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponseDTO(savedOrder);
     }
 
+    @Transactional
     @Override
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {

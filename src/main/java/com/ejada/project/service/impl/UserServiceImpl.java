@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ejada.project.dto.user.UserRequestDTO;
 import com.ejada.project.dto.user.UserResponseDTO;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserResponseDTO> getUsers() {
         Authentication authentication =
@@ -56,6 +58,7 @@ public class UserServiceImpl implements UserService {
         return List.of(userMapper.toResponseDTO(user));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserResponseDTO getUserById(Long id) {
         User user = userRepository.findById(id)
@@ -63,6 +66,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseDTO(user);
     }
 
+    @Transactional
     @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
         // Uniqueness checks
@@ -88,6 +92,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseDTO(savedUser);
     }
 
+    @Transactional
     @Override
     public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO dto) {
         User user = userRepository.findById(id)
@@ -139,6 +144,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseDTO(savedUser);
     }
 
+    @Transactional
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
